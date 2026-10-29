@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Water Manager</title>
+<meta name="description" content="Farm irrigation planner: which field to water, how many litres and how long to run the pump, from live weather — plus borewell recharge and rainwater harvesting.">
+<meta name="theme-color" content="#0D5C73" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1A1F" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Water">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,800&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#today" aria-label="Water Manager home">
+    <img src="icons/icon.svg" alt="" width="30" height="30">
+    <span>Water Manager</span>
+  </a>
+  <nav class="tabs" aria-label="Main">
+    <a href="#today" data-tab="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z"/></svg><span>Today</span></a>
+    <a href="#fields" data-tab="fields"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 20v-6M9 20v-9M13 20v-6M17 20v-10"/><path d="M9 11c0-2 1.5-3 3-3M17 10c0-2-1.5-3-3-3"/></svg><span>Fields</span></a>
+    <a href="#rain" data-tab="rain"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 14a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 14z"/><path d="M9 17l-1 3M13 17l-1 3M17 17l-1 3"/></svg><span>Rain</span></a>
+    <a href="#water" data-tab="water"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Use</span></a>
+  </nav>
+</header>
+<main id="view" tabindex="-1"></main>
+<dialog id="dlg"></dialog>
+<script type="module" src="app.js"></script>
+</body>
+</html>
