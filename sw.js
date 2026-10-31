@@ -1,6 +1,6 @@
 // App shell works offline; weather is fetched live and the app keeps its own last copy.
-const VERSION = "wm-v2";
-const SHELL = ["./", "index.html", "kolam/tokens.css", "styles.css", "app.js", "model.js", "weather.js", "rain.js", "store.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
+const VERSION = "wm-v3-auth";
+const SHELL = ["./", "index.html", "kolam/tokens.css", "styles.css", "app.js", "model.js", "weather.js", "rain.js", "store.js", "auth.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
