@@ -37,7 +37,7 @@ small { color: var(--muted); font-size: .82rem; }
 .mono, .amount b, .facts b, .meta { font-family: var(--mono); font-weight: 500; }
 
 /* header + tabs */
-.top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 24px; padding: 10px 16px; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 24px; padding: 10px var(--gutter); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .brand { display: flex; gap: 10px; align-items: center; color: var(--ink); text-decoration: none; font: 900 1.05rem var(--display); }
 .tabs { display: flex; gap: 4px; margin-left: auto; }
 .tabs a { display: flex; gap: 8px; align-items: center; min-height: var(--size-control-md); padding: 8px 14px; border-radius: var(--radius-pill); color: var(--ink-2); text-decoration: none; font-weight: 700; }
@@ -50,7 +50,9 @@ small { color: var(--muted); font-size: .82rem; }
 }
 @media (min-width: 721px) { body { padding-bottom: 40px; } }
 
-.page { max-width: 980px; margin: 0 auto; padding: 24px 16px 40px; display: grid; gap: 18px; }
+/* Full-width layout: pages fill the screen with a fluid side gutter; text keeps its own measure */
+:root { --gutter: clamp(16px, 3vw, 48px); }
+.page { width: 100%; margin: 0 auto; padding: 24px var(--gutter) 40px; display: grid; gap: 18px; }
 .page-head { display: grid; gap: 8px; }
 .page-head.split { grid-template-columns: 1fr auto; align-items: start; gap: 16px; }
 @media (max-width: 600px) { .page-head.split { grid-template-columns: 1fr; } }
@@ -153,7 +155,7 @@ small { color: var(--muted); font-size: .82rem; }
 .notice { background: var(--warn-soft); color: var(--ink); padding: 10px 14px; border-radius: var(--radius-md); }
 
 /* chart */
-.chart { position: relative; margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 10px 10px; }
+.chart { position: relative; margin: 0; width: 100%; max-width: 1200px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 10px 10px; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
 .chart .grid { stroke: var(--line); stroke-width: 1; }
 .chart .ax { fill: var(--muted); font: 11px var(--font); }
