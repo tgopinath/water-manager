@@ -34,11 +34,37 @@ const STATUS = {
 };
 const pill = (a) => `<span class="pill ${STATUS[a.key].tone}"><b aria-hidden="true">${STATUS[a.key].glyph}</b>${esc(a.label)}</span>`;
 
+// ---------- Android app mode (Material Design 3, from the shared Kolam M3 kit) ----------
+// Only inside the Android app (or ?app=android). In a browser KolamM3.init returns a stub and nothing changes.
+if (window.KolamM3?.isAndroid && !location.hash) history.replaceState(null, "", "#today");
+const m3 = window.KolamM3 ? KolamM3.init({
+  primary: "#0077b6", title: "Water Manager", home: "#today",
+  destinations: [
+    { id: "today", label: "Today", icon: "water_drop", href: "#today" },
+    { id: "fields", label: "Fields", icon: "grass", href: "#fields" },
+    { id: "rain", label: "Rain", icon: "rainy", href: "#rain" },
+    { id: "water", label: "Use", icon: "bar_chart", href: "#water" },
+  ],
+  actions: [{ icon: "location_on", label: "Change location", onClick: () => pickPlace() }],
+  hide: [".top"],
+}) : { enabled: false, setTitle() {}, setActive() {}, setBack() {} };
+const M3_TITLES = { today: "Today", fields: "Fields", rain: "Rain", water: "Water use" };
+function m3Sync(tab, id) {
+  if (!m3.enabled) return;
+  // The kit resets its overrides on every route change, so set ours just after it.
+  setTimeout(() => {
+    m3.setTitle(tab === "field" ? (field(id)?.name || "Field") : tab === "today" && !state.seen ? "Water Manager" : M3_TITLES[tab] || "Today");
+    m3.setActive(tab === "field" ? "fields" : M3_TITLES[tab] ? tab : "today");
+    m3.setBack(tab === "field" ? "#fields" : false);
+  });
+}
+
 // ---------- routing ----------
 function route() {
   const [tab, id] = (location.hash.slice(1) || "today").split("/");
   document.querySelectorAll(".tabs a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.tab === (tab === "field" ? "fields" : tab)));
   clearInterval(tick);
+  m3Sync(tab, id);
   if (!state.seen && tab === "today") return welcome();
   ({ today, fields: fieldsView, field: fieldView, rain: rainView, water: waterView }[tab] || today)(id);
   if (state.running) tick = setInterval(updateRunning, 1000);

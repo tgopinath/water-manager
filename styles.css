@@ -248,3 +248,42 @@ input::placeholder { color: var(--ink-muted); opacity: 1; }
 .tip[hidden] { display: none; }
 .facts b.word { font-family: var(--display); font-weight: 700; }
 .chart .hover[hidden] { display: none; }
+
+/* ---------- Android app mode (Material Design 3) ----------
+   kolam/m3/kolam-m3.css (loaded after this file) builds the app bar and navigation bar and points the Kolam
+   tokens at M3 colour roles. Here the app's own components get M3 shapes, surfaces and type.
+   Only html.k-android (inside the Android app) is touched; the website keeps its Kolam look. */
+html.k-android body { background: var(--md-sys-color-surface); padding-bottom: calc(80px + var(--md-inset-bottom)) !important; }
+html.k-android .page { padding: 8px 16px 24px; }
+html.k-android .back { display: none; }
+html.k-android h1 { font: var(--md-sys-typescale-headline-medium); letter-spacing: 0; }
+html.k-android h2 { font: var(--md-sys-typescale-title-large); }
+/* cards and surfaces: M3 filled cards, no Kolam borders or shadows */
+html.k-android :is(.card, .facts > div, .list, .chart, .daybars, .callout, .method, .uses > div, .strip li) { background: var(--md-sys-color-surface-container-low); border-color: transparent; box-shadow: none; border-radius: var(--md-sys-shape-corner-medium); }
+html.k-android .card { border-left-width: 0; }
+html.k-android .card:is(.crit, .warn, .info, .good) { box-shadow: inset 4px 0 0 var(--card-tone, var(--md-sys-color-primary)); }
+html.k-android .card.crit { --card-tone: var(--crit); } html.k-android .card.warn { --card-tone: var(--warn); }
+html.k-android .card.info { --card-tone: var(--info); } html.k-android .card.good { --card-tone: var(--good); }
+html.k-android .strip li.is-today { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); box-shadow: none; }
+html.k-android .callout.rain, html.k-android .rain-alert { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border-color: transparent; border-radius: var(--md-sys-shape-corner-medium); }
+html.k-android .running { border-radius: var(--md-sys-shape-corner-large); }
+html.k-android .notice { border-radius: var(--md-sys-shape-corner-medium); }
+html.k-android .empty { border-radius: var(--md-sys-shape-corner-medium); border-color: var(--md-sys-color-outline-variant); }
+/* buttons: outlined by default, filled for primary, tonal for small */
+html.k-android .btn { min-height: 40px; border-radius: var(--md-sys-shape-corner-full); padding: 10px 24px; font: var(--md-sys-typescale-label-large); background: transparent; border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-primary); }
+html.k-android .btn.primary { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border-color: transparent; }
+html.k-android .btn.sm { padding: 8px 16px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-color: transparent; }
+html.k-android .btn.stop { background: var(--md-sys-color-error); color: var(--md-sys-color-on-error); border-color: transparent; }
+html.k-android .btn.ghost { border-color: transparent; }
+html.k-android .running .btn { background: var(--md-sys-color-on-primary); color: var(--md-sys-color-primary); border-color: transparent; }
+/* the place button reads as an assist chip */
+html.k-android .place { min-height: 32px; border-radius: var(--md-sys-shape-corner-small); border: 1px solid var(--md-sys-color-outline-variant); background: transparent; font: var(--md-sys-typescale-label-large); }
+/* choice tiles, search results, dialog */
+html.k-android .choices label { border-radius: var(--md-sys-shape-corner-medium); border: 1px solid var(--md-sys-color-outline-variant); }
+html.k-android .choices label:has(input:checked) { background: var(--md-sys-color-secondary-container); border-color: transparent; color: var(--md-sys-color-on-secondary-container); }
+html.k-android .results button { border-radius: var(--md-sys-shape-corner-medium); border-color: transparent; background: var(--md-sys-color-surface-container); }
+html.k-android dialog { border: 0; border-radius: var(--md-sys-shape-corner-extra-large); background: var(--md-sys-color-surface-container-high); box-shadow: var(--md-sys-elevation-level3); }
+html.k-android dialog::backdrop { background: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent); }
+html.k-android .dlg-form { padding: 24px; }
+html.k-android .toast { bottom: calc(96px + var(--md-inset-bottom)); border-radius: var(--md-sys-shape-corner-extra-small); }
+html.k-android dialog :is(input:not([type=checkbox]):not([type=radio]), select) { min-height: 56px; border-radius: var(--md-sys-shape-corner-extra-small); border: 1px solid var(--md-sys-color-outline); background: transparent; }
