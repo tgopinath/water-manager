@@ -36,8 +36,39 @@ const pill = (a) => `<span class="pill ${STATUS[a.key].tone}"><b aria-hidden="tr
 
 // ---------- Android app mode (Material Design 3, from the shared Kolam M3 kit) ----------
 // Only inside the Android app (or ?app=android). In a browser KolamM3.init returns a stub and nothing changes.
-if (window.KolamM3?.isAndroid && !location.hash) history.replaceState(null, "", "#today");
-const m3 = window.KolamM3 ? KolamM3.init({
+// ---------- iOS app mode (Apple HIG, from the shared Kolam iOS kit) ----------
+// Only inside the iOS app (WaterManager-iOS shell) or with ?app=ios; KolamIOS.init returns null in a browser.
+// If both kits detect, iOS wins and the M3 kit is not started.
+const svgIcon = (inner) => `<svg class="ios-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${inner}</svg>`;
+const IOS_TABS = [
+  { id: "today", label: "Today", icon: svgIcon('<path d="M12 3s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z"/>'), href: "#today" },
+  { id: "fields", label: "Fields", icon: "leaf", href: "#fields" },
+  { id: "rain", label: "Rain", icon: svgIcon('<path d="M7 14a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.4 1.5A3.5 3.5 0 0 1 17.5 14z"/><path d="M9 17l-1 3M13 17l-1 3M17 17l-1 3"/>'), href: "#rain" },
+  { id: "water", label: "Use", icon: svgIcon('<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'), href: "#water" },
+];
+const ios = window.KolamIOS ? KolamIOS.init({
+  appName: "Water Manager", uaTokens: ["WaterManager-iOS"],
+  tint: { light: "#0070AC", dark: "#5AB8F0" },
+  tabs: IOS_TABS, currentTab: "today", content: "#view",
+}) : null;
+if (ios) { document.documentElement.classList.remove("k-android", "k-app"); if (!location.hash) history.replaceState(null, "", "#today"); }
+const IOS_TITLES = { today: "Today", fields: "Fields", rain: "Rain", water: "Water use" };
+function iosSync(tab, id) {
+  if (!ios) return;
+  const actions = [{ id: "iosPlace", icon: svgIcon('<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>'), label: "Change location", onClick: () => pickPlace() }];
+  KolamIOS.tabBar.select(tab === "field" ? "fields" : IOS_TITLES[tab] ? tab : "today");
+  if (tab === "field") KolamIOS.navBar.set({ title: field(id)?.name || "Field", back: { label: "Fields", onClick: () => (history.length > 1 ? history.back() : (location.hash = "#fields")) }, actions, keepTitle: true });
+  else KolamIOS.navBar.set({ title: tab === "today" && !state.seen ? "Water Manager" : IOS_TITLES[tab] || "Today", large: true, actions: state.seen ? actions : [], keepTitle: true });
+  setTimeout(() => {
+    // A page heading that only repeats the large title is hidden (HIG: the navigation bar names the screen).
+    const h1 = view.querySelector(".page-head h1"), large = document.querySelector(".ios-largetitle");
+    if (h1 && large && !large.hidden && h1.textContent.trim() === large.textContent.trim()) h1.hidden = true;
+    KolamIOS.enhance(view);
+  });
+}
+
+if (!ios && window.KolamM3?.isAndroid && !location.hash) history.replaceState(null, "", "#today");
+const m3 = window.KolamM3 && !ios ? KolamM3.init({
   primary: "#0077b6", title: "Water Manager", home: "#today",
   destinations: [
     { id: "today", label: "Today", icon: "water_drop", href: "#today" },
@@ -65,6 +96,7 @@ function route() {
   document.querySelectorAll(".tabs a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.tab === (tab === "field" ? "fields" : tab)));
   clearInterval(tick);
   m3Sync(tab, id);
+  iosSync(tab, id);
   if (!state.seen && tab === "today") return welcome();
   ({ today, fields: fieldsView, field: fieldView, rain: rainView, water: waterView }[tab] || today)(id);
   if (state.running) tick = setInterval(updateRunning, 1000);

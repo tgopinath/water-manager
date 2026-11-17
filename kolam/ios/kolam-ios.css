@@ -1,0 +1,781 @@
+/* =====================================================================================
+   Kolam iOS app mode — Apple Human Interface Guidelines (iOS 26, Liquid Glass)
+   https://developer.apple.com/design/human-interface-guidelines/components
+
+   Everything here is scoped to html.k-ios, which kolam-ios.js adds ONLY inside an iOS app
+   shell (WKWebView), an iOS Home Screen web app, or with ?app=ios. In a normal browser
+   (Safari included) nothing in this file applies and the app keeps its Kolam look.
+
+   Load after tokens.css and kolam.css:
+     <link rel="stylesheet" href="https://tgopinath.github.io/kolam-design-system/ios/kolam-ios.css">
+   Add class k-ios-classic to <html> (or init({ style: 'classic' })) for the pre-iOS 26 look:
+   full-width translucent bars and "‹ Back" text buttons instead of floating glass.
+   ===================================================================================== */
+
+/* ---------- Visibility helpers (these two work everywhere) ---------- */
+html:not(.k-ios) .ios-only { display: none !important; }
+html.k-ios .web-only { display: none !important; }
+
+/* ---------- System colours (light) ---------- */
+html.k-ios {
+  /* Typography: San Francisco via -apple-system (HIG). Tamil falls back to Noto Sans Tamil. */
+  --ios-font: -apple-system, "SF Pro Text", system-ui, "Noto Sans Tamil", sans-serif;
+  --ios-font-display: -apple-system, "SF Pro Display", system-ui, "Noto Sans Tamil", sans-serif;
+  --ios-font-rounded: ui-rounded, -apple-system, "SF Pro Rounded", system-ui, sans-serif;
+  --font-sans: var(--ios-font);
+  --font-display: var(--ios-font-display);
+  --ios-dt: 1; /* Dynamic Type scale, set by kolam-ios.js from the user's text size (body = 17pt at Large) */
+
+  /* Tint: each app's Kolam primary. --primary-text is the AA-safe shade for text and icons. */
+  --ios-tint: var(--primary-text, #0070ac);
+  --ios-tint-fill: var(--primary, #0077b6);
+  --ios-on-tint: var(--on-primary, #ffffff);
+  --ios-tint-soft: color-mix(in srgb, var(--ios-tint-fill) 14%, transparent);
+
+  --ios-label: #000000;
+  --ios-label2: rgba(60, 60, 67, .74);   /* HIG uses .6; darkened to pass WCAG AA (4.5:1) on white */
+  --ios-label3: rgba(60, 60, 67, .3);
+  --ios-label4: rgba(60, 60, 67, .18);
+  --ios-placeholder: rgba(60, 60, 67, .6);
+  --ios-sep: rgba(60, 60, 67, .29);
+  --ios-sep-opaque: #c6c6c8;
+  --ios-field-edge: rgba(60, 60, 67, .6);   /* 3:1 boundary for standalone fields (WCAG 1.4.11) */
+  --ios-fill: rgba(120, 120, 128, .2);
+  --ios-fill2: rgba(120, 120, 128, .16);
+  --ios-fill3: rgba(118, 118, 128, .12);
+  --ios-fill4: rgba(116, 116, 128, .08);
+  --ios-bg: #ffffff;
+  --ios-bg2: #f2f2f7;
+  --ios-bg3: #ffffff;
+  --ios-grouped: #f2f2f7;
+  --ios-grouped2: #ffffff;
+  --ios-grouped3: #f2f2f7;
+  --ios-elevated: #ffffff;
+  --ios-gray: #8e8e93; --ios-gray2: #aeaeb2; --ios-gray3: #c7c7cc; --ios-gray4: #d1d1d6; --ios-gray5: #e5e5ea; --ios-gray6: #f2f2f7;
+  --ios-red: #ff3b30; --ios-orange: #ff9500; --ios-yellow: #ffcc00; --ios-green: #34c759; --ios-mint: #00c7be;
+  --ios-teal: #30b0c7; --ios-cyan: #32ade6; --ios-blue: #007aff; --ios-indigo: #5856d6; --ios-purple: #af52de;
+  --ios-pink: #ff2d55; --ios-brown: #a2845e;
+  --ios-red-text: #d70015;   /* destructive text and badges: the Increase Contrast red, AA on white */
+  --ios-green-text: #248a3d;
+
+  /* Materials. Liquid Glass for the functional layer (bars, controls); never for content. */
+  --ios-glass: rgba(255, 255, 255, .64);
+  --ios-glass-strong: rgba(255, 255, 255, .86);
+  --ios-glass-edge: rgba(255, 255, 255, .75);
+  --ios-glass-shade: 0 8px 28px rgba(0, 0, 0, .12), 0 1px 3px rgba(0, 0, 0, .08);
+  --ios-glass-filter: saturate(180%) blur(16px);
+  --ios-bar: rgba(249, 249, 249, .82);          /* classic bar material */
+  --ios-thin: rgba(255, 255, 255, .7);          /* thin material for menus, banners */
+  --ios-scrim: rgba(0, 0, 0, .2);
+  --ios-alert-scrim: rgba(0, 0, 0, .3);
+  --ios-press: rgba(0, 0, 0, .08);
+  --ios-row-press: #d1d1d6;
+
+  --ios-radius-row: 26px;   /* inset grouped sections (iOS 26) */
+  --ios-radius-card: 26px;
+  --ios-radius-field: 12px;
+  --ios-radius-sheet: 38px;
+  --ios-radius-alert: 34px;
+  --ios-radius-menu: 22px;
+  --ios-ease: cubic-bezier(.32, .72, 0, 1);    /* UIKit-like spring curve */
+  --ios-dur: .38s;
+
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --ios-tabbar-h: 62px;
+  --ios-tabbar-space: calc(var(--ios-tabbar-h) + max(var(--sab), 12px) + 16px);
+  --ios-toolbar-space: calc(48px + max(var(--sab), 12px) + 16px);
+
+  color-scheme: light;
+}
+/* Kolam tokens remapped to iOS system colours, so every k- component follows along.
+   The repeated class outranks Kolam theme rules such as :root:not([data-theme="light"]):not([data-theme="contrast"]) (0,3,0). */
+html.k-ios.k-ios.k-ios.k-ios {
+  --bg: var(--ios-grouped);
+  --surface: var(--ios-grouped2);
+  --surface-sunken: var(--ios-fill3);
+  --surface-raised: var(--ios-elevated);
+  --line: var(--ios-sep);
+  --line-strong: var(--ios-field-edge);
+  --ink: var(--ios-label);
+  --ink-2: var(--ios-label2);
+  --ink-muted: var(--ios-label2);
+  --scrim: var(--ios-alert-scrim);
+  --shadow-1: none;
+  --radius-md: 12px;
+  --radius-lg: 26px;
+  --size-target-min: 44px;   /* HIG: 44 × 44 pt minimum hit region */
+  --size-control-md: 44px;
+
+}
+html.k-ios.k-ios.k-ios.k-ios.k-ios-classic {
+  --ios-radius-row: 10px; --ios-radius-card: 12px; --ios-radius-field: 10px;
+  --ios-radius-sheet: 10px; --ios-radius-alert: 14px; --ios-radius-menu: 13px;
+  --ios-tabbar-h: 49px; --ios-tabbar-space: calc(49px + var(--sab)); --ios-toolbar-space: calc(44px + var(--sab));
+  --radius-lg: 10px;
+}
+
+/* ---------- System colours (dark) ---------- */
+@media (prefers-color-scheme: dark) {
+  html.k-ios:not([data-theme="light"]):not([data-theme="contrast"]) {
+    --ios-label: #ffffff; --ios-label2: rgba(235, 235, 245, .64); --ios-label3: rgba(235, 235, 245, .3); --ios-label4: rgba(235, 235, 245, .16);
+    --ios-placeholder: rgba(235, 235, 245, .55); --ios-sep: rgba(84, 84, 88, .65); --ios-sep-opaque: #38383a; --ios-field-edge: rgba(235, 235, 245, .42);
+    --ios-fill: rgba(120, 120, 128, .36); --ios-fill2: rgba(120, 120, 128, .32); --ios-fill3: rgba(118, 118, 128, .24); --ios-fill4: rgba(118, 118, 128, .18);
+    --ios-bg: #000000; --ios-bg2: #1c1c1e; --ios-bg3: #2c2c2e; --ios-grouped: #000000; --ios-grouped2: #1c1c1e; --ios-grouped3: #2c2c2e; --ios-elevated: #1c1c1e;
+    --ios-gray: #8e8e93; --ios-gray2: #636366; --ios-gray3: #48484a; --ios-gray4: #3a3a3c; --ios-gray5: #2c2c2e; --ios-gray6: #1c1c1e;
+    --ios-red: #ff453a; --ios-orange: #ff9f0a; --ios-yellow: #ffd60a; --ios-green: #30d158; --ios-mint: #63e6e2; --ios-teal: #40c8e0;
+    --ios-cyan: #64d2ff; --ios-blue: #0a84ff; --ios-indigo: #5e5ce6; --ios-purple: #bf5af2; --ios-pink: #ff375f; --ios-brown: #ac8e68;
+    --ios-red-text: #ff6961; --ios-green-text: #30d158;
+    --ios-glass: rgba(40, 40, 44, .58); --ios-glass-strong: rgba(36, 36, 40, .86); --ios-glass-edge: rgba(255, 255, 255, .14);
+    --ios-glass-shade: 0 8px 28px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4);
+    --ios-bar: rgba(22, 22, 24, .82); --ios-thin: rgba(37, 37, 40, .76); --ios-scrim: rgba(0, 0, 0, .4); --ios-alert-scrim: rgba(0, 0, 0, .48);
+    --ios-press: rgba(255, 255, 255, .1); --ios-row-press: #3a3a3c;
+    color-scheme: dark;
+  }
+}
+html.k-ios[data-theme="dark"] {
+  --ios-label: #ffffff; --ios-label2: rgba(235, 235, 245, .64); --ios-label3: rgba(235, 235, 245, .3); --ios-label4: rgba(235, 235, 245, .16);
+  --ios-placeholder: rgba(235, 235, 245, .55); --ios-sep: rgba(84, 84, 88, .65); --ios-sep-opaque: #38383a; --ios-field-edge: rgba(235, 235, 245, .42);
+  --ios-fill: rgba(120, 120, 128, .36); --ios-fill2: rgba(120, 120, 128, .32); --ios-fill3: rgba(118, 118, 128, .24); --ios-fill4: rgba(118, 118, 128, .18);
+  --ios-bg: #000000; --ios-bg2: #1c1c1e; --ios-bg3: #2c2c2e; --ios-grouped: #000000; --ios-grouped2: #1c1c1e; --ios-grouped3: #2c2c2e; --ios-elevated: #1c1c1e;
+  --ios-gray: #8e8e93; --ios-gray2: #636366; --ios-gray3: #48484a; --ios-gray4: #3a3a3c; --ios-gray5: #2c2c2e; --ios-gray6: #1c1c1e;
+  --ios-red: #ff453a; --ios-orange: #ff9f0a; --ios-yellow: #ffd60a; --ios-green: #30d158; --ios-mint: #63e6e2; --ios-teal: #40c8e0;
+  --ios-cyan: #64d2ff; --ios-blue: #0a84ff; --ios-indigo: #5e5ce6; --ios-purple: #bf5af2; --ios-pink: #ff375f; --ios-brown: #ac8e68;
+  --ios-red-text: #ff6961; --ios-green-text: #30d158;
+  --ios-glass: rgba(40, 40, 44, .58); --ios-glass-strong: rgba(36, 36, 40, .86); --ios-glass-edge: rgba(255, 255, 255, .14);
+  --ios-glass-shade: 0 8px 28px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4);
+  --ios-bar: rgba(22, 22, 24, .82); --ios-thin: rgba(37, 37, 40, .76); --ios-scrim: rgba(0, 0, 0, .4); --ios-alert-scrim: rgba(0, 0, 0, .48);
+  --ios-press: rgba(255, 255, 255, .1); --ios-row-press: #3a3a3c;
+  color-scheme: dark;
+}
+
+/* ---------- Increase Contrast ---------- */
+@media (prefers-contrast: more) {
+  html.k-ios {
+    --ios-label2: rgba(60, 60, 67, .86); --ios-placeholder: rgba(60, 60, 67, .76); --ios-sep: rgba(60, 60, 67, .5); --ios-field-edge: #3c3c43;
+    --ios-glass: rgba(255, 255, 255, .94); --ios-glass-strong: #ffffff; --ios-glass-edge: rgba(0, 0, 0, .5); --ios-bar: #f9f9f9; --ios-thin: #ffffff;
+    --ios-blue: #0040dd; --ios-red: #d70015; --ios-green: #248a3d;
+  }
+}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  html.k-ios:not([data-theme="light"]):not([data-theme="contrast"]) {
+    --ios-label2: rgba(235, 235, 245, .84); --ios-placeholder: rgba(235, 235, 245, .7); --ios-sep: rgba(84, 84, 88, .9); --ios-field-edge: #ebebf5;
+    --ios-glass: rgba(28, 28, 30, .96); --ios-glass-strong: #1c1c1e; --ios-glass-edge: rgba(255, 255, 255, .55); --ios-bar: #161618; --ios-thin: #1c1c1e;
+    --ios-blue: #409cff; --ios-red: #ff6961; --ios-green: #30db5b;
+  }
+}
+html.k-ios[data-theme="contrast"] {
+  --ios-label2: rgba(60, 60, 67, .86); --ios-placeholder: rgba(60, 60, 67, .76); --ios-sep: rgba(60, 60, 67, .5); --ios-field-edge: #3c3c43;
+  --ios-glass: rgba(255, 255, 255, .94); --ios-glass-strong: #ffffff; --ios-glass-edge: rgba(0, 0, 0, .5); --ios-bar: #f9f9f9; --ios-thin: #ffffff;
+  --ios-blue: #0040dd; --ios-red: #d70015; --ios-green: #248a3d;
+}
+/* Reduce Transparency: solid materials (the shell reports the setting; Safari has no media query yet) */
+html.k-ios.ios-reduce-transparency { --ios-glass: var(--ios-glass-strong); --ios-bar: var(--ios-bg2); --ios-thin: var(--ios-elevated); --ios-glass-filter: none; }
+@media (prefers-reduced-transparency: reduce) {
+  html.k-ios { --ios-glass: var(--ios-glass-strong); --ios-bar: var(--ios-bg2); --ios-thin: var(--ios-elevated); --ios-glass-filter: none; }
+}
+
+/* ---------- Base ---------- */
+html.k-ios :is(.ios-sheet-grabber, .ios-search-clear, .ios-largetitle, .ios-badge, .ios-row)[hidden] { display: none !important; }
+html.k-ios { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html.k-ios body {
+  font-family: var(--ios-font); font-size: calc(17px * var(--ios-dt)); line-height: 1.294; letter-spacing: -.024em;
+  background: var(--bg); color: var(--ios-label); -webkit-font-smoothing: antialiased;
+  padding-left: var(--sal); padding-right: var(--sar);
+}
+html.k-ios :lang(ta) { font-family: "Noto Sans Tamil", var(--ios-font); letter-spacing: 0; line-height: 1.6; }
+html.k-ios.ios-has-tabbar body { padding-bottom: var(--ios-tabbar-space); }
+html.k-ios.ios-has-toolbar body { padding-bottom: var(--ios-toolbar-space); }
+html.k-ios :is(a, button, [role="button"], label, summary) { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; touch-action: manipulation; }
+html.k-ios :is(.ios-navbar, .ios-tabbar, .ios-toolbar, .k-bottomnav, .ios-seg, .k-tabs, .ios-btn, .k-btn) { -webkit-user-select: none; user-select: none; }
+html.k-ios :focus-visible { outline: 3px solid color-mix(in srgb, var(--ios-tint-fill) 60%, transparent); outline-offset: 2px; }
+html.k-ios a { color: var(--ios-tint); }
+.ios-sf-icon, html.k-ios .ios-icon { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Typography: Dynamic Type styles (sizes at the default "Large" setting) ---------- */
+html.k-ios .ios-large-title { font: 700 calc(34px * var(--ios-dt))/1.206 var(--ios-font-display); letter-spacing: .011em; }
+html.k-ios .ios-title1 { font: 700 calc(28px * var(--ios-dt))/1.214 var(--ios-font-display); letter-spacing: .013em; }
+html.k-ios .ios-title2 { font: 700 calc(22px * var(--ios-dt))/1.273 var(--ios-font-display); letter-spacing: -.012em; }
+html.k-ios .ios-title3 { font: 600 calc(20px * var(--ios-dt))/1.25 var(--ios-font-display); letter-spacing: -.023em; }
+html.k-ios .ios-headline { font: 600 calc(17px * var(--ios-dt))/1.294 var(--ios-font); letter-spacing: -.024em; }
+html.k-ios .ios-body { font: 400 calc(17px * var(--ios-dt))/1.294 var(--ios-font); letter-spacing: -.024em; }
+html.k-ios .ios-callout { font: 400 calc(16px * var(--ios-dt))/1.3125 var(--ios-font); letter-spacing: -.02em; }
+html.k-ios .ios-subhead { font: 400 calc(15px * var(--ios-dt))/1.333 var(--ios-font); letter-spacing: -.015em; }
+html.k-ios .ios-footnote { font: 400 calc(13px * var(--ios-dt))/1.385 var(--ios-font); letter-spacing: -.006em; }
+html.k-ios .ios-caption1 { font: 400 calc(12px * var(--ios-dt))/1.333 var(--ios-font); }
+html.k-ios .ios-caption2 { font: 400 calc(11px * var(--ios-dt))/1.182 var(--ios-font); letter-spacing: .006em; }
+html.k-ios .ios-secondary { color: var(--ios-label2); }
+/* Kolam type classes follow the iOS scale */
+html.k-ios :is(.display-xl, .display-lg) { font: 700 calc(34px * var(--ios-dt))/1.206 var(--ios-font-display); letter-spacing: .011em; }
+html.k-ios .heading-1 { font: 700 calc(28px * var(--ios-dt))/1.214 var(--ios-font-display); letter-spacing: .013em; }
+html.k-ios .heading-2 { font: 700 calc(22px * var(--ios-dt))/1.273 var(--ios-font-display); letter-spacing: -.012em; }
+html.k-ios .heading-3 { font: 600 calc(20px * var(--ios-dt))/1.25 var(--ios-font-display); letter-spacing: -.023em; }
+html.k-ios :is(.body-lg, .body) { font: 400 calc(17px * var(--ios-dt))/1.294 var(--ios-font); letter-spacing: -.024em; }
+html.k-ios .body-sm { font: 400 calc(15px * var(--ios-dt))/1.333 var(--ios-font); }
+html.k-ios .label { font: 600 calc(15px * var(--ios-dt))/1.333 var(--ios-font); }
+html.k-ios .caption { font: 400 calc(12px * var(--ios-dt))/1.333 var(--ios-font); letter-spacing: 0; }
+
+/* =====================================================================================
+   Navigation bar — inline title (17pt semibold, centred) and large title (34pt bold) on root
+   screens, collapsing to inline on scroll. Back = chevron (glass) or "‹ Previous" (classic).
+   ===================================================================================== */
+html.k-ios .ios-navbar {
+  position: sticky; top: 0; z-index: 40; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+  height: calc(54px + var(--sat)); padding: var(--sat) calc(16px + var(--sar)) 0 calc(16px + var(--sal)); margin: 0 calc(-1 * var(--sar)) 0 calc(-1 * var(--sal));
+  color: var(--ios-label); isolation: isolate;
+}
+/* Scroll edge effect: content softly blurs and fades under the bar */
+html.k-ios .ios-navbar::before {
+  content: ""; position: absolute; inset: 0 0 -24px; z-index: -1; pointer-events: none;
+  background: linear-gradient(var(--bg) 0%, color-mix(in srgb, var(--bg) 70%, transparent) 55%, transparent 100%);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(#000 50%, transparent); mask-image: linear-gradient(#000 50%, transparent);
+  opacity: 0; transition: opacity .2s;
+}
+html.k-ios .ios-navbar.is-scrolled::before, html.k-ios .ios-navbar:not(.has-large)::before { opacity: 1; }
+html.k-ios .ios-navbar-leading { justify-self: start; display: flex; gap: 8px; min-width: 0; }
+html.k-ios .ios-navbar-trailing { justify-self: end; display: flex; gap: 8px; min-width: 0; }
+html.k-ios .ios-navbar-title {
+  grid-column: 2; margin: 0; max-width: 58vw; font: 600 17px/22px var(--ios-font); letter-spacing: -.024em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; transition: opacity .2s;
+}
+html.k-ios .ios-navbar-title small { display: block; font: 400 12px/14px var(--ios-font); color: var(--ios-label2); letter-spacing: 0; }
+html.k-ios .ios-navbar.has-large:not(.is-collapsed) .ios-navbar-title { opacity: 0; }
+html.k-ios .ios-largetitle {
+  margin: 0; padding: 2px calc(16px + var(--sar)) 8px calc(16px + var(--sal));
+  font: 700 calc(34px * min(var(--ios-dt), 1.25))/1.206 var(--ios-font-display); letter-spacing: .011em; color: var(--ios-label);
+  overflow-wrap: anywhere;
+}
+/* Bar buttons: icons sit in a Liquid Glass capsule; several share one capsule */
+html.k-ios .ios-barbtn-group {
+  display: inline-flex; align-items: center; border-radius: 999px; height: 44px; padding: 0 2px;
+  background: var(--ios-glass); -webkit-backdrop-filter: var(--ios-glass-filter); backdrop-filter: var(--ios-glass-filter);
+  box-shadow: var(--ios-glass-shade), inset 0 0 0 .5px var(--ios-glass-edge);
+}
+html.k-ios .ios-barbtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 44px; height: 44px; padding: 0 10px;
+  border: 0; border-radius: 999px; background: transparent; color: var(--ios-label); font: 500 17px/22px var(--ios-font); letter-spacing: -.024em;
+  cursor: pointer; text-decoration: none;
+}
+html.k-ios .ios-barbtn .ios-icon { width: 22px; height: 22px; }
+html.k-ios .ios-barbtn.is-icon { width: 44px; padding: 0; }
+html.k-ios .ios-barbtn.is-prominent { background: var(--ios-tint-fill); color: var(--ios-on-tint); font-weight: 600; padding: 0 16px; box-shadow: var(--ios-glass-shade); }
+html.k-ios .ios-back { padding: 0; width: 44px; }
+html.k-ios .ios-back .ios-back-label { display: none; }
+html.k-ios .ios-back .ios-icon { width: 24px; height: 24px; stroke-width: 2.2; margin-left: -2px; }
+
+/* Classic bars: translucent full-width material with a hairline once content scrolls under */
+html.k-ios.k-ios-classic .ios-navbar { height: calc(44px + var(--sat)); padding-left: calc(8px + var(--sal)); padding-right: calc(8px + var(--sar)); }
+html.k-ios.k-ios-classic .ios-navbar::before {
+  inset: 0; background: var(--ios-bar); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  -webkit-mask-image: none; mask-image: none; box-shadow: 0 .5px 0 var(--ios-sep);
+}
+html.k-ios.k-ios-classic .ios-navbar.has-large:not(.is-scrolled)::before { opacity: 0; }
+html.k-ios.k-ios-classic .ios-barbtn-group { background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; height: 44px; }
+html.k-ios.k-ios-classic .ios-barbtn { color: var(--ios-tint); padding: 0 8px; }
+html.k-ios.k-ios-classic .ios-barbtn.is-prominent { background: none; color: var(--ios-tint); font-weight: 600; box-shadow: none; padding: 0 8px; }
+html.k-ios.k-ios-classic .ios-back { width: auto; padding: 0 8px 0 0; color: var(--ios-tint); gap: 0; }
+html.k-ios.k-ios-classic .ios-back .ios-back-label { display: inline; max-width: 30vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+html.k-ios.k-ios-classic .ios-back .ios-icon { width: 26px; height: 26px; stroke-width: 2.4; margin: 0 -1px 0 -4px; }
+
+/* =====================================================================================
+   Tab bar — up to 5 destinations; floating Liquid Glass capsule; optional search tab
+   at the trailing end. Selected tab = tint + pill. Classic = 49pt full-width bar.
+   Kolam's k-bottomnav is restyled into the same tab bar.
+   ===================================================================================== */
+html.k-ios :is(.ios-tabbar, .k-bottomnav) {
+  position: fixed; z-index: 45; left: calc(20px + var(--sal)); right: calc(20px + var(--sar)); bottom: max(calc(var(--sab) - 12px), 12px);
+  display: flex; gap: 10px; align-items: stretch; height: var(--ios-tabbar-h); padding: 0; margin: 0;
+  background: none; border: 0; box-shadow: none; grid-auto-flow: unset;
+}
+html.k-ios .ios-tabbar-tabs, html.k-ios .k-bottomnav {
+  flex: 1; display: flex; padding: 4px; border-radius: 999px; min-width: 0;
+  background: var(--ios-glass); -webkit-backdrop-filter: var(--ios-glass-filter); backdrop-filter: var(--ios-glass-filter);
+  box-shadow: var(--ios-glass-shade), inset 0 0 0 .5px var(--ios-glass-edge);
+}
+html.k-ios :is(.ios-tab, .k-bottomnav a) {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 0; padding: 0 2px; border: 0; border-radius: 999px; background: transparent; color: var(--ios-label);
+  font: 600 10px/12px var(--ios-font); letter-spacing: .01em; text-decoration: none; cursor: pointer; position: relative;
+}
+html.k-ios :is(.ios-tab, .k-bottomnav a) > span:not(.k-pip):not(.ios-badge) { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.k-ios :is(.ios-tab, .k-bottomnav a) :is(.ios-icon, .k-icon) { width: 26px; height: 26px; stroke-width: 1.8; }
+html.k-ios .k-bottomnav a .k-pip { width: auto; height: auto; background: none !important; display: contents; }
+html.k-ios :is(.ios-tab[aria-current="page"], .ios-tab[aria-selected="true"], .k-bottomnav a[aria-current="page"]) { color: var(--ios-tint); background: var(--ios-fill3); }
+html.k-ios :is(.ios-tab[aria-current="page"], .ios-tab[aria-selected="true"], .k-bottomnav a[aria-current="page"]) :is(.ios-icon, .k-icon) { stroke-width: 2.2; }
+html.k-ios .ios-tabbar-search {
+  flex: none; width: var(--ios-tabbar-h); height: var(--ios-tabbar-h); border-radius: 50%; border: 0; display: grid; place-items: center;
+  color: var(--ios-label); background: var(--ios-glass); -webkit-backdrop-filter: var(--ios-glass-filter); backdrop-filter: var(--ios-glass-filter);
+  box-shadow: var(--ios-glass-shade), inset 0 0 0 .5px var(--ios-glass-edge); cursor: pointer;
+}
+html.k-ios .ios-tabbar-search[aria-current="page"] { color: var(--ios-tint); }
+html.k-ios .ios-tabbar-search .ios-icon { width: 24px; height: 24px; }
+html.k-ios .ios-badge {
+  position: absolute; top: 4px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--ios-red-text); color: #fff; font: 600 12px/18px var(--ios-font); text-align: center; letter-spacing: 0;
+}
+/* Classic tab bar */
+html.k-ios.k-ios-classic :is(.ios-tabbar, .k-bottomnav) { left: 0; right: 0; bottom: 0; height: calc(49px + var(--sab)); gap: 0; padding: 0 var(--sar) var(--sab) var(--sal); }
+html.k-ios.k-ios-classic :is(.ios-tabbar-tabs, .k-bottomnav, .ios-tabbar) { border-radius: 0; }
+html.k-ios.k-ios-classic .ios-tabbar-tabs { padding: 0; }
+html.k-ios.k-ios-classic .ios-tabbar, html.k-ios.k-ios-classic .k-bottomnav {
+  background: var(--ios-bar); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); box-shadow: 0 -.5px 0 var(--ios-sep);
+}
+html.k-ios.k-ios-classic .ios-tabbar-tabs { background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+html.k-ios.k-ios-classic :is(.ios-tab, .k-bottomnav a) { border-radius: 0; color: var(--ios-label2); font-weight: 500; }
+html.k-ios.k-ios-classic :is(.ios-tab[aria-current="page"], .ios-tab[aria-selected="true"], .k-bottomnav a[aria-current="page"]) { background: none; color: var(--ios-tint); }
+html.k-ios.k-ios-classic .ios-tabbar-search { background: none; box-shadow: none; border-radius: 0; width: 64px; height: 49px; -webkit-backdrop-filter: none; backdrop-filter: none; color: var(--ios-label2); }
+
+/* =====================================================================================
+   Toolbar — actions for the current screen at the bottom (use a tab bar for navigation)
+   ===================================================================================== */
+html.k-ios .ios-toolbar {
+  position: fixed; z-index: 44; left: calc(16px + var(--sal)); right: calc(16px + var(--sar)); bottom: max(calc(var(--sab) - 8px), 12px);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 48px; pointer-events: none;
+}
+html.k-ios .ios-toolbar > * { pointer-events: auto; }
+html.k-ios .ios-toolbar .ios-barbtn-group { height: 48px; }
+html.k-ios .ios-toolbar .ios-barbtn { height: 48px; min-width: 48px; }
+html.k-ios .ios-toolbar .ios-barbtn.is-icon { width: 48px; }
+html.k-ios .ios-toolbar-title { font: 400 12px/16px var(--ios-font); color: var(--ios-label2); text-align: center; flex: 1; }
+html.k-ios.k-ios-classic .ios-toolbar {
+  left: 0; right: 0; bottom: 0; height: calc(44px + var(--sab)); padding: 0 calc(8px + var(--sar)) var(--sab) calc(8px + var(--sal));
+  background: var(--ios-bar); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); box-shadow: 0 -.5px 0 var(--ios-sep); pointer-events: auto;
+}
+
+/* =====================================================================================
+   Buttons — styles: filled (prominent), tinted, gray, plain, glass; sizes mini 28 / small 32 /
+   regular 44 / large 52 / xl 64. Capsule by default; .ios-btn-rect for vertical stacks.
+   Every size keeps a 44 × 44 pt hit region.
+   ===================================================================================== */
+html.k-ios :is(.ios-btn, .k-btn) {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; height: auto; padding: 0 20px; border: 0; border-radius: 999px;
+  font: 600 calc(17px * min(var(--ios-dt), 1.35))/22px var(--ios-font); letter-spacing: -.024em;
+  background: var(--ios-fill2); color: var(--ios-tint); cursor: pointer; text-decoration: none; white-space: nowrap;
+}
+html.k-ios :is(.ios-btn-filled, .k-btn-primary, .k-btn-secondary-solid, .k-btn-accent) { background: var(--ios-tint-fill); color: var(--ios-on-tint); }
+html.k-ios .k-btn-accent { background: var(--accent); color: var(--on-accent); }
+html.k-ios :is(.ios-btn-tinted, .k-btn-secondary) { background: var(--ios-tint-soft); color: var(--ios-tint); }
+html.k-ios :is(.ios-btn-gray, .k-btn-outline) { background: var(--ios-fill2); color: var(--ios-tint); border: 0; }
+html.k-ios :is(.ios-btn-plain, .k-btn-ghost) { background: transparent; color: var(--ios-tint); padding: 0 8px; font-weight: 400; }
+html.k-ios .ios-btn-glass {
+  background: var(--ios-glass); color: var(--ios-label); -webkit-backdrop-filter: var(--ios-glass-filter); backdrop-filter: var(--ios-glass-filter);
+  box-shadow: var(--ios-glass-shade), inset 0 0 0 .5px var(--ios-glass-edge);
+}
+html.k-ios :is(.ios-btn-destructive, .k-btn-danger) { color: var(--ios-red-text); background: color-mix(in srgb, var(--ios-red) 14%, transparent); }
+html.k-ios .ios-btn-filled.ios-btn-destructive { background: var(--ios-red-text); color: #fff; }
+html.k-ios :is(.ios-btn-mini) { min-height: 28px; padding: 0 10px; font-size: 13px; font-weight: 500; }
+html.k-ios :is(.ios-btn-small, .k-btn-sm) { min-height: 32px; padding: 0 14px; font-size: 15px; font-weight: 500; }
+html.k-ios :is(.ios-btn-large, .k-btn-lg) { min-height: 52px; padding: 0 24px; }
+html.k-ios .ios-btn-xl { min-height: 64px; padding: 0 28px; font-size: 19px; }
+html.k-ios :is(.ios-btn-mini, .ios-btn-small, .k-btn-sm)::after { content: ""; position: absolute; inset: -8px -2px; }
+html.k-ios :is(.ios-btn-block, .k-btn-block) { display: flex; width: 100%; }
+html.k-ios :is(.ios-btn-rect) { border-radius: 12px; }
+html.k-ios .ios-btn-circle { width: 44px; padding: 0; border-radius: 50%; }
+html.k-ios .ios-btn-circle.ios-btn-small { width: 32px; }
+html.k-ios .ios-btn-circle.ios-btn-large { width: 52px; }
+html.k-ios :is(.ios-btn, .k-btn) :is(.ios-icon, .k-icon) { width: 20px; height: 20px; }
+html.k-ios :is(.ios-btn, .k-btn):is([disabled], [aria-disabled="true"]) { background: var(--ios-fill3); color: var(--ios-label3); cursor: default; border: 0; }
+html.k-ios.k-ios-classic :is(.ios-btn, .k-btn):not(.ios-btn-circle) { border-radius: 12px; }
+html.k-ios :is(.k-btn-primary, .k-btn-secondary, .k-btn-outline, .k-btn-ghost, .k-btn-accent, .k-btn-danger, .k-btn-secondary-solid):hover { filter: none; }
+html.k-ios .k-btn-primary:hover { background: var(--ios-tint-fill); }
+html.k-ios .k-btn-secondary:hover { background: var(--ios-tint-soft); color: var(--ios-tint); }
+html.k-ios :is(.k-btn-outline, .k-btn-ghost):hover { background: inherit; }
+/* Icon buttons */
+html.k-ios .k-iconbtn { width: 44px; height: 44px; color: var(--ios-tint); }
+html.k-ios .k-iconbtn:hover { background: transparent; color: var(--ios-tint); }
+html.k-ios .k-iconbtn-filled { background: var(--ios-fill2); }
+
+/* Press feedback: iOS dims what you touch (no ripples). Glass grows slightly. */
+html.k-ios :is(.ios-btn, .k-btn, .ios-barbtn, .ios-tab, .k-bottomnav a, .ios-tabbar-search, .k-iconbtn, .ios-seg-btn, .k-tab, .ios-stepper button, .ios-pagecontrol button) { transition: opacity .3s, transform .3s var(--ios-ease), background-color .2s; }
+html.k-ios :is(.ios-btn, .k-btn, .ios-barbtn, .k-iconbtn, .ios-stepper button):active:not([disabled]) { opacity: .45; transition: opacity 0s; }
+html.k-ios :is(.ios-tab, .k-bottomnav a, .ios-tabbar-search):active { transform: scale(.94); }
+html.k-ios .ios-btn-glass:active, html.k-ios .ios-barbtn-group:active { transform: scale(1.04); }
+@media (prefers-reduced-motion: reduce) {
+  html.k-ios :is(.ios-tab, .k-bottomnav a, .ios-tabbar-search, .ios-btn-glass, .ios-barbtn-group):active { transform: none; }
+}
+
+/* =====================================================================================
+   Lists and tables — inset grouped sections, 44pt+ rows, inset separators, disclosure
+   chevrons, detail text, icon tiles, swipe actions. Kolam k-list follows the same style.
+   ===================================================================================== */
+html.k-ios .ios-section { margin: 0 0 32px; }
+html.k-ios .ios-section-header { margin: 0 16px 8px; font: 600 calc(15px * var(--ios-dt))/20px var(--ios-font); color: var(--ios-label); letter-spacing: -.015em; }
+html.k-ios .ios-section-header.is-quiet { font: 400 calc(13px * var(--ios-dt))/18px var(--ios-font); color: var(--ios-label2); text-transform: uppercase; letter-spacing: -.006em; }
+html.k-ios .ios-section-footer { margin: 8px 16px 0; font: 400 calc(13px * var(--ios-dt))/18px var(--ios-font); color: var(--ios-label2); }
+html.k-ios :is(.ios-list, .k-list) {
+  list-style: none; margin: 0; padding: 0; background: var(--ios-grouped2); border: 0; border-radius: var(--ios-radius-row); overflow: hidden;
+}
+html.k-ios .ios-list.is-plain { border-radius: 0; background: var(--ios-bg); }
+html.k-ios :is(.ios-row, .k-list-item) {
+  position: relative; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 16px; margin: 0;
+  background: var(--ios-grouped2); color: var(--ios-label); font: 400 calc(17px * var(--ios-dt))/22px var(--ios-font); letter-spacing: -.024em;
+  text-decoration: none; text-align: left; border: 0; width: 100%;
+}
+html.k-ios.k-ios-classic :is(.ios-row, .k-list-item) { min-height: 44px; padding: 11px 16px; }
+html.k-ios :is(.ios-row, .k-list-item) + :is(.ios-row, .k-list-item) { border-top: 0; }
+html.k-ios :is(.ios-list, .k-list) > :is(li, .ios-row, .k-list-item, .ios-swipe) + :is(li, .ios-row, .k-list-item, .ios-swipe)::before {
+  content: ""; position: absolute; top: 0; right: 0; left: var(--ios-sep-inset, 16px); height: .5px; background: var(--ios-sep); z-index: 2;
+}
+html.k-ios :is(.ios-list, .k-list) > li { position: relative; }
+html.k-ios :is(.ios-list, .k-list) > :is(li, .ios-row, .ios-swipe):has(.ios-row-icon, > .k-icon) + :is(li, .ios-row, .ios-swipe) { --ios-sep-inset: 60px; }
+html.k-ios :is(.ios-row-text, .k-list-text) { flex: 1; min-width: 0; display: grid; gap: 1px; }
+html.k-ios :is(.ios-row-text, .k-list-text) small { font: 400 calc(15px * var(--ios-dt))/20px var(--ios-font); color: var(--ios-label2); letter-spacing: -.015em; }
+html.k-ios .ios-row-detail { flex: none; margin-left: auto; color: var(--ios-label2); max-width: 50%; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.k-ios .ios-row-icon {
+  flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--ios-tint-fill); color: var(--ios-on-tint);
+}
+html.k-ios .ios-row-icon .ios-icon { width: 18px; height: 18px; stroke-width: 2; }
+html.k-ios .k-list-item > .k-icon { color: var(--ios-tint); }
+/* Disclosure indicator: a.ios-row, a.k-list-item and .ios-row.has-disclosure */
+html.k-ios :is(a.ios-row, a.k-list-item, button.k-list-item, .ios-row.has-disclosure, button.ios-row.has-disclosure)::after {
+  content: ""; flex: none; width: 8px; height: 14px; margin-left: 4px; background: var(--ios-label3);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 14'%3E%3Cpath d='M1.2 1.2 6.8 7l-5.6 5.8' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 14'%3E%3Cpath d='M1.2 1.2 6.8 7l-5.6 5.8' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+html.k-ios :is(.ios-row, .k-list-item).no-disclosure::after { display: none; }
+html.k-ios :is(a.ios-row, button.ios-row, a.k-list-item, button.k-list-item) { cursor: pointer; }
+html.k-ios :is(a.ios-row, button.ios-row, a.k-list-item, button.k-list-item):active { background: var(--ios-row-press); transition: none; }
+html.k-ios :is(a.k-list-item, button.k-list-item):hover { background: var(--ios-grouped2); }
+html.k-ios .ios-row.is-destructive { color: var(--ios-red-text); }
+html.k-ios .ios-row.is-action { color: var(--ios-tint); }
+html.k-ios .ios-row[aria-checked="true"] .ios-check, html.k-ios .ios-row .ios-check.is-on { opacity: 1; }
+html.k-ios .ios-check { flex: none; margin-left: auto; width: 20px; height: 20px; color: var(--ios-tint); opacity: 0; stroke-width: 2.6; }
+/* Fields inside rows: the row is the boundary */
+html.k-ios .ios-row :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+  flex: 1; min-width: 0; height: 30px; margin: -4px 0; border: 0; padding: 0; background: transparent; color: var(--ios-label);
+  font: inherit; text-align: inherit; outline-offset: 4px;
+}
+html.k-ios .ios-row .ios-row-label { flex: none; min-width: 6.5em; }
+html.k-ios .ios-row :is(input, textarea)::placeholder { color: var(--ios-placeholder); opacity: 1; }
+/* Swipe actions */
+html.k-ios .ios-swipe { position: relative; overflow: hidden; background: var(--ios-grouped2); }
+html.k-ios .ios-swipe > .ios-row { position: relative; z-index: 1; transition: transform var(--ios-dur) var(--ios-ease); will-change: transform; }
+html.k-ios .ios-swipe.is-dragging > .ios-row { transition: none; }
+html.k-ios .ios-swipe-actions { position: absolute; inset: 0 0 0 auto; display: flex; z-index: 0; }
+html.k-ios .ios-swipe-actions.is-leading { inset: 0 auto 0 0; }
+html.k-ios .ios-swipe-actions button {
+  min-width: 76px; border: 0; padding: 0 14px; color: #fff; background: var(--ios-gray); font: 500 15px/20px var(--ios-font); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+html.k-ios .ios-swipe-actions button .ios-icon { width: 20px; height: 20px; }
+html.k-ios .ios-swipe-actions button.is-destructive { background: #d70015; }
+html.k-ios .ios-swipe-actions button.is-tint { background: var(--ios-tint-fill); color: var(--ios-on-tint); }
+html.k-ios .ios-swipe-actions button.is-orange { background: #c94f00; }
+html.k-ios .ios-swipe-actions button.is-indigo { background: #4b49c7; }
+
+/* Kolam card → content-layer card (no glass, no border) */
+html.k-ios .k-card { border: 0; box-shadow: none; border-radius: var(--ios-radius-card); background: var(--ios-grouped2); }
+html.k-ios .k-card-media { border-radius: var(--ios-radius-card) var(--ios-radius-card) 0 0; }
+html.k-ios .k-card-title { font: 600 calc(17px * var(--ios-dt))/22px var(--ios-font); }
+html.k-ios .k-card-meta { font: 400 calc(15px * var(--ios-dt))/20px var(--ios-font); color: var(--ios-label2); }
+html.k-ios a.k-card:hover { border-color: transparent; }
+html.k-ios a.k-card:active { opacity: .7; }
+html.k-ios .k-alert { border-radius: 20px; background: var(--ios-grouped2); }
+html.k-ios .k-stat-value { font: 700 calc(34px * var(--ios-dt))/41px var(--ios-font-rounded); }
+html.k-ios :is(.k-badge) { border-radius: 999px; font: 600 12px/16px var(--ios-font); letter-spacing: 0; padding: 3px 9px; }
+html.k-ios .k-count { background: var(--ios-red-text); color: #fff; font: 600 13px/1 var(--ios-font); min-width: 22px; height: 22px; }
+html.k-ios .k-avatar { font-family: var(--ios-font-rounded); font-weight: 600; }
+
+/* =====================================================================================
+   Segmented control — 32pt, sliding thumb. k-tabs uses the same look.
+   ===================================================================================== */
+html.k-ios :is(.ios-seg, .k-tabs) {
+  position: relative; display: flex; width: 100%; padding: 2px; gap: 0; min-height: 36px;
+  border-radius: 999px; background: var(--ios-fill3); border: 0; isolation: isolate;
+}
+html.k-ios.k-ios-classic :is(.ios-seg, .k-tabs) { border-radius: 9px; min-height: 32px; }
+html.k-ios :is(.ios-seg, .k-tabs)::before {
+  content: ""; position: absolute; z-index: -1; top: 2px; bottom: 2px; left: 2px; width: calc((100% - 4px) / var(--n, 2));
+  transform: translateX(calc(100% * var(--i, 0))); border-radius: inherit; background: var(--ios-elevated);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04), inset 0 0 0 .5px rgba(0, 0, 0, .04);
+  transition: transform var(--ios-dur) var(--ios-ease);
+}
+html.k-ios.k-ios-classic :is(.ios-seg, .k-tabs)::before { border-radius: 7px; }
+@media (prefers-color-scheme: dark) { html.k-ios:not([data-theme="light"]):not([data-theme="contrast"]) :is(.ios-seg, .k-tabs)::before { background: #636366; } }
+html.k-ios[data-theme="dark"] :is(.ios-seg, .k-tabs)::before { background: #636366; }
+html.k-ios :is(.ios-seg:not([data-ready]), .k-tabs:not([data-ready]))::before { display: none; }
+html.k-ios :is(.ios-seg-btn, .k-tab) {
+  flex: 1 1 0; min-width: 0; min-height: 32px; padding: 0 10px; border: 0; border-radius: inherit; background: transparent;
+  color: var(--ios-label); font: 500 calc(14px * min(var(--ios-dt), 1.3))/18px var(--ios-font); letter-spacing: -.01em; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative;
+}
+html.k-ios :is(.ios-seg-btn, .k-tab)::after { content: ""; position: absolute; inset: -6px 0; } /* 44pt hit region */
+html.k-ios :is(.ios-seg-btn, .k-tab):is([aria-selected="true"], [aria-checked="true"], [aria-pressed="true"]) { font-weight: 600; background: transparent; box-shadow: none; color: var(--ios-label); }
+html.k-ios :is(.ios-seg:not([data-ready]), .k-tabs:not([data-ready])) :is(.ios-seg-btn, .k-tab):is([aria-selected="true"], [aria-checked="true"]) { background: var(--ios-elevated); }
+html.k-ios .k-tab:hover { color: var(--ios-label); }
+@media (prefers-reduced-motion: reduce) { html.k-ios :is(.ios-seg, .k-tabs)::before { transition: none; } }
+
+/* =====================================================================================
+   Toggle (switch) — 51 × 31, tint when on. Same markup as k-switch.
+   ===================================================================================== */
+html.k-ios :is(.ios-switch, .k-switch) { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; cursor: pointer; }
+html.k-ios :is(.ios-switch, .k-switch) input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+html.k-ios :is(.ios-switch-track, .k-switch-track) {
+  flex: none; position: relative; width: 51px; height: 31px; border-radius: 999px; border: 0; background: var(--ios-fill); transition: background-color .25s;
+}
+html.k-ios :is(.ios-switch-track, .k-switch-track)::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 3px 1px rgba(0, 0, 0, .06); transition: transform var(--ios-dur) var(--ios-ease), width .2s var(--ios-ease);
+}
+html.k-ios :is(.ios-switch, .k-switch) input:checked + :is(.ios-switch-track, .k-switch-track) { background: var(--ios-tint-fill); }
+html.k-ios :is(.ios-switch, .k-switch) input:checked + :is(.ios-switch-track, .k-switch-track)::after { transform: translateX(20px); background: #fff; }
+html.k-ios :is(.ios-switch, .k-switch):active input:not(:disabled) + :is(.ios-switch-track, .k-switch-track)::after { width: 33px; }
+html.k-ios :is(.ios-switch, .k-switch):active input:checked:not(:disabled) + :is(.ios-switch-track, .k-switch-track)::after { transform: translateX(14px); }
+html.k-ios :is(.ios-switch, .k-switch) input:focus-visible + :is(.ios-switch-track, .k-switch-track) { outline: 3px solid color-mix(in srgb, var(--ios-tint-fill) 60%, transparent); outline-offset: 2px; }
+html.k-ios :is(.ios-switch, .k-switch) input:disabled + :is(.ios-switch-track, .k-switch-track) { opacity: .5; }
+/* Increase Contrast / Differentiate Without Colour: on/off glyphs like iOS's "On/Off Labels" */
+@media (prefers-contrast: more) {
+  html.k-ios :is(.ios-switch-track, .k-switch-track)::before { content: ""; position: absolute; top: 50%; right: 10px; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--ios-label2); }
+  html.k-ios :is(.ios-switch, .k-switch) input:checked + :is(.ios-switch-track, .k-switch-track)::before { right: auto; left: 13px; width: 1.5px; height: 10px; margin-top: -5px; border-radius: 1px; box-shadow: none; background: var(--ios-on-tint); }
+}
+html.k-ios .ios-row :is(.ios-switch, .k-switch) { flex: 1; margin: -6px 0; }
+
+/* Kolam checkbox/radio → iOS circular checkmark */
+html.k-ios .k-check { gap: 12px; align-items: center; }
+html.k-ios .k-check-box { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ios-field-edge); background: transparent; }
+html.k-ios .k-check input:checked + .k-check-box { background: var(--ios-tint-fill); border-color: var(--ios-tint-fill); color: var(--ios-on-tint); }
+html.k-ios .k-check input[type="radio"]:checked + .k-check-box { background: var(--ios-tint-fill); box-shadow: none; }
+html.k-ios .k-check input[type="radio"]:checked + .k-check-box svg { opacity: 1; }
+
+/* =====================================================================================
+   Slider — 4pt track filled with tint up to a 28pt thumb (kolam-ios.js keeps --p current)
+   ===================================================================================== */
+html.k-ios input[type="range"].ios-slider {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer; --p: 50%;
+}
+html.k-ios input[type="range"].ios-slider::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--ios-tint-fill) var(--p), var(--ios-fill) var(--p));
+}
+html.k-ios input[type="range"].ios-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%; background: #fff; border: 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 3px 1px rgba(0, 0, 0, .06), 0 0 0 .5px rgba(0, 0, 0, .04); transition: transform .2s var(--ios-ease);
+}
+html.k-ios input[type="range"].ios-slider:active::-webkit-slider-thumb { transform: scale(1.12); }
+html.k-ios input[type="range"].ios-slider::-moz-range-track { height: 6px; border-radius: 3px; background: var(--ios-fill); }
+html.k-ios input[type="range"].ios-slider::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--ios-tint-fill); }
+html.k-ios input[type="range"].ios-slider::-moz-range-thumb { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 3px 8px rgba(0, 0, 0, .15); }
+html.k-ios .ios-slider-row { display: flex; align-items: center; gap: 12px; color: var(--ios-label2); }
+html.k-ios .ios-slider-row .ios-icon { width: 18px; height: 18px; }
+
+/* =====================================================================================
+   Stepper — paired − / + in a capsule; kolam-ios.js wires data-min/max/step/value
+   ===================================================================================== */
+html.k-ios .ios-stepper { flex: none; display: inline-flex; align-items: center; height: 32px; border-radius: 999px; background: var(--ios-fill3); position: relative; }
+html.k-ios.k-ios-classic .ios-stepper { border-radius: 8px; }
+html.k-ios .ios-stepper button {
+  position: relative; width: 47px; height: 32px; border: 0; background: transparent; color: var(--ios-label); display: grid; place-items: center; cursor: pointer; border-radius: inherit;
+}
+html.k-ios .ios-stepper button::after { content: ""; position: absolute; inset: -6px 0; }
+html.k-ios .ios-stepper button + button::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--ios-sep); }
+html.k-ios .ios-stepper button:disabled { color: var(--ios-label3); cursor: default; }
+html.k-ios .ios-stepper .ios-icon { width: 18px; height: 18px; stroke-width: 2.2; }
+html.k-ios .ios-stepper output { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+html.k-ios .ios-stepper-value { font-variant-numeric: tabular-nums; color: var(--ios-label2); margin-left: auto; margin-right: 12px; }
+
+/* =====================================================================================
+   Text fields and search fields
+   ===================================================================================== */
+html.k-ios :is(.ios-textfield, .k-input, .k-select) {
+  width: 100%; min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--ios-radius-field);
+  background: var(--ios-grouped2); color: var(--ios-label); box-shadow: inset 0 0 0 1px var(--ios-field-edge);
+  font: 400 calc(17px * var(--ios-dt))/22px var(--ios-font); letter-spacing: -.024em;
+}
+html.k-ios textarea:is(.ios-textfield, .k-input) { padding: 11px 14px; min-height: 96px; }
+html.k-ios :is(.ios-textfield, .k-input)::placeholder { color: var(--ios-placeholder); opacity: 1; }
+html.k-ios :is(.ios-textfield, .k-input, .k-select):focus-visible { outline: 0; box-shadow: inset 0 0 0 2px var(--ios-tint-fill); }
+html.k-ios :is(.ios-textfield, .k-input)[aria-invalid="true"] { box-shadow: inset 0 0 0 2px var(--ios-red-text); }
+html.k-ios :is(.ios-textfield, .k-input, .k-select):disabled { background: var(--ios-fill4); color: var(--ios-label3); border-style: none; }
+html.k-ios :is(.k-input, .k-select):hover { border-color: transparent; }
+html.k-ios .k-label { font: 400 calc(13px * var(--ios-dt))/18px var(--ios-font); color: var(--ios-label2); margin-left: 16px; }
+html.k-ios .k-help { font: 400 calc(13px * var(--ios-dt))/18px var(--ios-font); color: var(--ios-label2); margin-left: 16px; }
+html.k-ios .k-error { font: 500 calc(13px * var(--ios-dt))/18px var(--ios-font); color: var(--ios-red-text); margin-left: 16px; }
+html.k-ios .k-input-group > .k-icon { color: var(--ios-label2); left: 12px; width: 18px; height: 18px; }
+html.k-ios .k-input-group > .k-input { padding-left: 38px; }
+html.k-ios .ios-search { display: flex; align-items: center; gap: 8px; margin: 0; }
+html.k-ios .ios-search-field {
+  flex: 1; min-width: 0; position: relative; display: flex; align-items: center; height: 44px; padding: 0 6px 0 12px; gap: 6px;
+  border-radius: 999px; background: var(--ios-fill3); color: var(--ios-label2);
+}
+html.k-ios.k-ios-classic .ios-search-field { height: 36px; border-radius: 10px; }
+html.k-ios .ios-search-field .ios-icon { width: 18px; height: 18px; flex: none; }
+html.k-ios .ios-search-field input {
+  flex: 1; min-width: 0; height: 100%; border: 0; padding: 0; background: transparent; color: var(--ios-label);
+  font: 400 17px/22px var(--ios-font); letter-spacing: -.024em; -webkit-appearance: none; appearance: none;
+}
+html.k-ios .ios-search-field input::-webkit-search-cancel-button { display: none; }
+html.k-ios .ios-search-field input::placeholder { color: var(--ios-placeholder); opacity: 1; }
+html.k-ios .ios-search-field input:focus-visible { outline: 0; }
+html.k-ios .ios-search-field:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--ios-tint-fill) 50%, transparent); }
+html.k-ios .ios-search-clear { flex: none; width: 32px; height: 32px; border: 0; padding: 0; border-radius: 50%; background: transparent; color: var(--ios-label3); display: grid; place-items: center; cursor: pointer; }
+html.k-ios .ios-search-clear[hidden] { display: none; }
+html.k-ios .ios-search-clear span { width: 17px; height: 17px; border-radius: 50%; background: var(--ios-label2); display: grid; place-items: center; color: var(--ios-grouped2); }
+html.k-ios .ios-search-clear .ios-icon { width: 10px; height: 10px; stroke-width: 3; }
+html.k-ios .ios-search-cancel { flex: none; border: 0; background: none; color: var(--ios-tint); font: 400 17px/22px var(--ios-font); min-height: 44px; padding: 0 4px; cursor: pointer; display: none; }
+html.k-ios .ios-search.is-active .ios-search-cancel { display: inline-flex; align-items: center; }
+
+/* =====================================================================================
+   Progress indicators — bar (4pt) and activity indicator (spinner)
+   ===================================================================================== */
+html.k-ios progress.ios-progress { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border: 0; border-radius: 2px; background: var(--ios-fill); overflow: hidden; }
+html.k-ios progress.ios-progress::-webkit-progress-bar { background: var(--ios-fill); border-radius: 2px; }
+html.k-ios progress.ios-progress::-webkit-progress-value { background: var(--ios-tint-fill); border-radius: 2px; transition: width .3s; }
+html.k-ios progress.ios-progress::-moz-progress-bar { background: var(--ios-tint-fill); border-radius: 2px; }
+html.k-ios .k-progress-track { height: 4px; box-shadow: none; background: var(--ios-fill); }
+html.k-ios .k-progress-fill { background: var(--ios-tint-fill); }
+html.k-ios .k-progress-head { font: 400 calc(15px * var(--ios-dt))/20px var(--ios-font); }
+html.k-ios .ios-spinner {
+  display: inline-block; width: 20px; height: 20px; flex: none; color: var(--ios-label2);
+  background: conic-gradient(from 0deg, currentColor 0 12.5%, color-mix(in srgb, currentColor 88%, transparent) 0 25%, color-mix(in srgb, currentColor 75%, transparent) 0 37.5%, color-mix(in srgb, currentColor 62%, transparent) 0 50%, color-mix(in srgb, currentColor 50%, transparent) 0 62.5%, color-mix(in srgb, currentColor 38%, transparent) 0 75%, color-mix(in srgb, currentColor 26%, transparent) 0 87.5%, color-mix(in srgb, currentColor 16%, transparent) 0 100%);
+  -webkit-mask: repeating-conic-gradient(from -9deg, #000 0 18deg, transparent 18deg 45deg), radial-gradient(circle, transparent 32%, #000 33%);
+  -webkit-mask-composite: source-in; mask: repeating-conic-gradient(from -9deg, #000 0 18deg, transparent 18deg 45deg) intersect, radial-gradient(circle, transparent 32%, #000 33%);
+  border-radius: 50%; animation: ios-spin 1s steps(8) infinite;
+}
+html.k-ios .ios-spinner.is-large { width: 37px; height: 37px; }
+@keyframes ios-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { html.k-ios .ios-spinner { animation-duration: 2.4s; } }
+
+/* =====================================================================================
+   Page control — dots; current = label, others = label3; optional glass capsule
+   ===================================================================================== */
+html.k-ios .ios-pagecontrol { display: inline-flex; align-items: center; justify-content: center; gap: 0; padding: 0 6px; height: 28px; border-radius: 14px; }
+html.k-ios .ios-pagecontrol.is-glass { background: var(--ios-glass); -webkit-backdrop-filter: var(--ios-glass-filter); backdrop-filter: var(--ios-glass-filter); box-shadow: inset 0 0 0 .5px var(--ios-glass-edge); }
+html.k-ios .ios-pagecontrol button { position: relative; width: 16px; height: 28px; padding: 0; border: 0; background: none; cursor: pointer; }
+html.k-ios .ios-pagecontrol button::before { content: ""; position: absolute; left: 4px; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--ios-label3); }
+html.k-ios .ios-pagecontrol button[aria-current="true"]::before { background: var(--ios-label); }
+html.k-ios .ios-pagecontrol button::after { content: ""; position: absolute; inset: -8px 0; }
+
+/* =====================================================================================
+   Sheets — bottom sheet with detents (medium / large), grabber, Cancel / Done header.
+   Medium floats inset with Liquid Glass corners; large fills the width.
+   ===================================================================================== */
+html.k-ios dialog.ios-sheet {
+  position: fixed; inset: auto 0 0 0; margin: 0 auto; width: 100%; max-width: 720px; max-height: none; height: var(--ios-sheet-h, 52vh);
+  padding: 0; border: 0; border-radius: var(--ios-radius-sheet) var(--ios-radius-sheet) 0 0; background: var(--ios-elevated); color: var(--ios-label);
+  box-shadow: 0 -2px 30px rgba(0, 0, 0, .18); display: flex; flex-direction: column; overflow: hidden;
+  transition: height var(--ios-dur) var(--ios-ease), border-radius var(--ios-dur) var(--ios-ease), inset var(--ios-dur) var(--ios-ease), width var(--ios-dur) var(--ios-ease);
+}
+html.k-ios dialog.ios-sheet:not([open]) { display: none; }
+html.k-ios dialog.ios-sheet[data-detent="medium"] { inset: auto 8px max(8px, calc(var(--sab) - 26px)) 8px; width: auto; border-radius: var(--ios-radius-sheet); }
+html.k-ios.k-ios-classic dialog.ios-sheet[data-detent="medium"] { inset: auto 0 0 0; border-radius: var(--ios-radius-sheet) var(--ios-radius-sheet) 0 0; }
+html.k-ios :is(dialog.ios-sheet, dialog.ios-actionsheet):is(:focus, :focus-visible) { outline: 0; }
+html.k-ios dialog.ios-sheet::backdrop { background: var(--ios-scrim); }
+html.k-ios dialog.ios-sheet.is-dragging { transition: none; }
+html.k-ios .ios-sheet-grabber { flex: none; display: block; width: 36px; height: 5px; margin: 5px auto 0; border-radius: 3px; background: var(--ios-label3); border: 0; padding: 0; cursor: grab; position: relative; -webkit-appearance: none; appearance: none; }
+html.k-ios .ios-sheet-grabber::after { content: ""; position: absolute; inset: -12px -20px; }
+html.k-ios .ios-sheet-header { flex: none; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; min-height: 52px; padding: 4px 12px 4px; touch-action: none; }
+html.k-ios .ios-sheet-header > :first-child { justify-self: start; }
+html.k-ios .ios-sheet-header > :last-child { justify-self: end; }
+html.k-ios .ios-sheet-title { margin: 0; font: 600 17px/22px var(--ios-font); text-align: center; grid-column: 2; letter-spacing: -.024em; }
+html.k-ios .ios-sheet-header .ios-barbtn:not(.is-prominent) { background: var(--ios-fill3); }
+html.k-ios.k-ios-classic .ios-sheet-header .ios-barbtn:not(.is-prominent) { background: none; }
+html.k-ios .ios-sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 8px 16px calc(16px + var(--sab)); }
+html.k-ios .ios-sheet-body > .ios-section:last-child { margin-bottom: 0; }
+html.k-ios .ios-sheet .ios-list, html.k-ios .ios-sheet .k-list { background: var(--ios-grouped3); }
+html.k-ios .ios-sheet .ios-row, html.k-ios .ios-sheet .k-list-item, html.k-ios .ios-sheet .ios-swipe { background: var(--ios-grouped3); }
+@media (prefers-color-scheme: dark) { html.k-ios:not([data-theme="light"]):not([data-theme="contrast"]) dialog.ios-sheet { --ios-elevated: #1c1c1e; } }
+
+/* =====================================================================================
+   Alerts and action sheets
+   ===================================================================================== */
+html.k-ios :is(dialog.ios-alert, dialog.k-dialog) {
+  width: min(300px, calc(100% - 64px)); padding: 22px 18px 18px; border: 0; border-radius: var(--ios-radius-alert);
+  background: var(--ios-glass-strong); -webkit-backdrop-filter: saturate(180%) blur(30px); backdrop-filter: saturate(180%) blur(30px);
+  color: var(--ios-label); box-shadow: 0 16px 48px rgba(0, 0, 0, .22), inset 0 0 0 .5px var(--ios-glass-edge); text-align: center;
+}
+html.k-ios :is(dialog.ios-alert, dialog.k-dialog)::backdrop { background: var(--ios-alert-scrim); }
+html.k-ios :is(.ios-alert-title, .k-dialog-title) { margin: 0 0 4px; font: 600 17px/22px var(--ios-font); letter-spacing: -.024em; }
+html.k-ios :is(.ios-alert-message, .k-dialog-body) { margin: 0 0 18px; font: 400 15px/20px var(--ios-font); color: var(--ios-label); }
+html.k-ios .ios-alert-field { margin: -6px 0 18px; }
+html.k-ios :is(.ios-alert-actions, .k-dialog-actions) { display: flex; gap: 10px; justify-content: stretch; flex-wrap: nowrap; }
+html.k-ios :is(.ios-alert-actions, .k-dialog-actions).is-stacked { flex-direction: column; }
+html.k-ios :is(.ios-alert-actions, .k-dialog-actions) > * { flex: 1 1 0; min-width: 0; }
+html.k-ios .ios-alert-actions button {
+  min-height: 48px; border: 0; border-radius: 999px; background: var(--ios-fill2); color: var(--ios-label); font: 500 17px/22px var(--ios-font); cursor: pointer; padding: 0 12px;
+}
+html.k-ios .ios-alert-actions button.is-default { background: var(--ios-tint-fill); color: var(--ios-on-tint); font-weight: 600; }
+html.k-ios .ios-alert-actions button.is-destructive { color: var(--ios-red-text); }
+html.k-ios .ios-alert-actions button:active { opacity: .5; }
+/* Classic alert: 270pt, hairline-separated text buttons */
+html.k-ios.k-ios-classic :is(dialog.ios-alert, dialog.k-dialog) { width: 270px; padding: 19px 0 0; background: var(--ios-thin); }
+html.k-ios.k-ios-classic :is(.ios-alert-title, .ios-alert-message, .ios-alert-field) { padding: 0 16px; }
+html.k-ios.k-ios-classic .ios-alert-message { margin-bottom: 19px; font-size: 13px; line-height: 18px; }
+html.k-ios.k-ios-classic .ios-alert-actions { gap: 0; box-shadow: 0 -.5px 0 var(--ios-sep); }
+html.k-ios.k-ios-classic .ios-alert-actions button { border-radius: 0; background: none; color: var(--ios-tint); min-height: 44px; font-weight: 400; }
+html.k-ios.k-ios-classic .ios-alert-actions button + button { box-shadow: -.5px 0 0 var(--ios-sep); }
+html.k-ios.k-ios-classic .ios-alert-actions.is-stacked button + button { box-shadow: 0 -.5px 0 var(--ios-sep); }
+html.k-ios.k-ios-classic .ios-alert-actions button.is-default { background: none; color: var(--ios-tint); font-weight: 600; }
+html.k-ios.k-ios-classic .ios-alert-actions button.is-destructive { color: var(--ios-red-text); }
+
+html.k-ios dialog.ios-actionsheet {
+  position: fixed; inset: auto 8px max(8px, var(--sab)) 8px; margin: 0 auto; width: auto; max-width: 520px; padding: 0; border: 0; background: none; color: var(--ios-label); overflow: visible;
+}
+html.k-ios dialog.ios-actionsheet::backdrop { background: var(--ios-alert-scrim); }
+html.k-ios .ios-actionsheet-group {
+  border-radius: var(--ios-radius-alert); overflow: hidden; background: var(--ios-glass-strong);
+  -webkit-backdrop-filter: saturate(180%) blur(30px); backdrop-filter: saturate(180%) blur(30px); box-shadow: inset 0 0 0 .5px var(--ios-glass-edge);
+}
+html.k-ios.k-ios-classic .ios-actionsheet-group { border-radius: 14px; }
+html.k-ios .ios-actionsheet-group + .ios-actionsheet-group { margin-top: 8px; }
+html.k-ios .ios-actionsheet-head { padding: 14px 16px; text-align: center; font: 600 13px/18px var(--ios-font); color: var(--ios-label2); box-shadow: inset 0 -.5px 0 var(--ios-sep); }
+html.k-ios .ios-actionsheet-head p { margin: 2px 0 0; font-weight: 400; }
+html.k-ios .ios-actionsheet button {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 57px; border: 0; background: none; color: var(--ios-tint);
+  font: 400 20px/25px var(--ios-font); letter-spacing: -.02em; cursor: pointer;
+}
+html.k-ios .ios-actionsheet-group button + button { box-shadow: inset 0 .5px 0 var(--ios-sep); }
+html.k-ios .ios-actionsheet button.is-destructive { color: var(--ios-red-text); }
+html.k-ios .ios-actionsheet button.is-cancel { font-weight: 600; }
+html.k-ios .ios-actionsheet button:active { background: var(--ios-press); }
+
+/* =====================================================================================
+   Menus — pull-down menu from a button: glass panel, 44pt rows, trailing symbols
+   ===================================================================================== */
+html.k-ios dialog.ios-menu {
+  position: fixed; right: auto; bottom: auto; margin: 0; padding: 6px 0; min-width: 250px; max-width: min(320px, calc(100vw - 32px)); border: 0; border-radius: var(--ios-radius-menu);
+  background: var(--ios-thin); -webkit-backdrop-filter: saturate(180%) blur(30px); backdrop-filter: saturate(180%) blur(30px); color: var(--ios-label);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .2), inset 0 0 0 .5px var(--ios-glass-edge); transform-origin: var(--ios-menu-origin, top right);
+}
+html.k-ios dialog.ios-menu::backdrop { background: transparent; }
+html.k-ios .ios-menu-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 16px; border: 0; background: none; color: inherit; text-align: left;
+  font: 400 17px/22px var(--ios-font); letter-spacing: -.024em; cursor: pointer;
+}
+html.k-ios .ios-menu-item > span { flex: 1; }
+html.k-ios .ios-menu-item .ios-icon { width: 20px; height: 20px; }
+html.k-ios .ios-menu-item .ios-menu-check { width: 16px; height: 16px; stroke-width: 2.6; visibility: hidden; margin-left: -4px; }
+html.k-ios .ios-menu-item[aria-checked="true"] .ios-menu-check { visibility: visible; }
+html.k-ios .ios-menu-item.is-destructive { color: var(--ios-red-text); }
+html.k-ios .ios-menu-item:is(:hover, :focus-visible, :active) { background: var(--ios-press); outline: 0; }
+html.k-ios .ios-menu-item:disabled { color: var(--ios-label3); }
+html.k-ios .ios-menu-sep { height: 8px; margin: 6px 0; background: var(--ios-fill4); }
+html.k-ios .ios-menu-title { padding: 6px 16px 4px; font: 400 13px/18px var(--ios-font); color: var(--ios-label2); }
+
+/* Banners: Kolam toast as a floating glass capsule */
+html.k-ios .k-toast {
+  border-radius: 999px; background: var(--ios-glass-strong); color: var(--ios-label); -webkit-backdrop-filter: saturate(180%) blur(30px); backdrop-filter: saturate(180%) blur(30px);
+  box-shadow: var(--ios-glass-shade), inset 0 0 0 .5px var(--ios-glass-edge); font: 500 15px/20px var(--ios-font); padding: 8px 8px 8px 18px;
+}
+html.k-ios .k-toast > .k-icon { color: var(--ios-tint); }
+html.k-ios .k-toast .k-btn-ghost { color: var(--ios-tint); text-decoration: none; min-height: 36px; }
+
+/* Chat: Messages-style bubbles */
+html.k-ios .k-chat { border: 0; border-radius: var(--ios-radius-card); }
+html.k-ios .k-msg-body { border-radius: 20px; font: 400 calc(17px * var(--ios-dt))/22px var(--ios-font); }
+html.k-ios .k-msg-user .k-msg-body { background: var(--ios-tint-fill); color: var(--ios-on-tint); border-bottom-right-radius: 6px; }
+html.k-ios .k-msg-ai .k-msg-body { background: var(--ios-fill3); border-bottom-left-radius: 6px; }
+html.k-ios .k-composer { border-top: 0; padding: 8px 12px calc(8px + var(--sab)); }
+html.k-ios .k-composer:focus-within { outline: 0; }
+html.k-ios .k-composer textarea { min-height: 36px; padding: 7px 14px; border-radius: 18px; box-shadow: inset 0 0 0 1px var(--ios-field-edge); font-size: 17px; line-height: 22px; }
+html.k-ios .k-iconbtn-send { width: 36px; height: 36px; background: var(--ios-tint-fill); color: var(--ios-on-tint); }
+
+/* Page layout helper for root screens */
+html.k-ios .ios-content { padding: 8px calc(16px + var(--sar)) 24px calc(16px + var(--sal)); }
+
+/* Motion: sheets / alerts / menus fade instead of sliding when Reduce Motion is on */
+@media (prefers-reduced-motion: reduce) {
+  html.k-ios dialog.ios-sheet, html.k-ios .ios-swipe > .ios-row, html.k-ios :is(.ios-switch-track, .k-switch-track)::after { transition-duration: .01s; }
+}

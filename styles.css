@@ -287,3 +287,46 @@ html.k-android dialog::backdrop { background: color-mix(in srgb, var(--md-sys-co
 html.k-android .dlg-form { padding: 24px; }
 html.k-android .toast { bottom: calc(96px + var(--md-inset-bottom)); border-radius: var(--md-sys-shape-corner-extra-small); }
 html.k-android dialog :is(input:not([type=checkbox]):not([type=radio]), select) { min-height: 56px; border-radius: var(--md-sys-shape-corner-extra-small); border: 1px solid var(--md-sys-color-outline); background: transparent; }
+
+/* ---------- iOS app mode (Apple HIG) ----------
+   kolam/ios/kolam-ios.css (loaded after this file) builds the navigation bar, tab bar and sheets and maps the
+   Kolam tokens onto iOS system colours. Here the app's own components get iOS shapes, materials and type.
+   Only html.k-ios (inside the iOS app, or ?app=ios) is touched; the website keeps its Kolam look. */
+html.k-ios body { background: var(--ios-grouped); }
+html.k-ios .top, html.k-ios .back { display: none !important; } /* navigation bar + tab bar + edge swipe replace them */
+html.k-ios .page { padding: 4px 16px 32px; }
+html.k-ios h1 { font: 700 28px/1.214 var(--ios-font-display); letter-spacing: .013em; }
+html.k-ios h2 { font: 700 22px/1.273 var(--ios-font-display); letter-spacing: -.012em; }
+html.k-ios h3 { font: 600 17px/1.294 var(--ios-font); letter-spacing: -.024em; }
+html.k-ios .eyebrow { font: 400 13px/1.385 var(--ios-font); letter-spacing: 0; color: var(--ios-label2); }
+html.k-ios :is(a, button):active { opacity: .6; }
+/* cards: inset grouped surfaces; status cards keep a tinted leading edge */
+html.k-ios :is(.card, .facts > div, .list, .chart, .daybars, .callout, .method, .uses > div, .strip li) { background: var(--ios-grouped2); border-color: transparent; box-shadow: none; border-radius: var(--ios-radius-card); }
+html.k-ios .card { border-left-width: 0; }
+html.k-ios .card:is(.crit, .warn, .info, .good) { box-shadow: inset 4px 0 0 var(--card-tone, var(--ios-tint)); }
+html.k-ios .card.crit { --card-tone: var(--crit); } html.k-ios .card.warn { --card-tone: var(--warn); }
+html.k-ios .card.info { --card-tone: var(--info); } html.k-ios .card.good { --card-tone: var(--good); }
+html.k-ios .strip li { border-radius: 16px; }
+html.k-ios .strip li.is-today { outline: 2px solid var(--ios-tint); outline-offset: -2px; }
+html.k-ios .callout.rain, html.k-ios .rain-alert { background: color-mix(in srgb, var(--ios-tint-fill) 14%, var(--ios-grouped2)); border-color: transparent; border-radius: var(--ios-radius-card); }
+html.k-ios .running { border-radius: var(--ios-radius-card); }
+html.k-ios :is(.notice, .empty) { border-radius: 16px; }
+/* buttons: gray, tinted and filled capsules */
+html.k-ios .btn { min-height: 44px; border: 0; border-radius: 999px; padding: 0 18px; background: var(--ios-fill3); color: var(--ios-tint); font: 600 17px/22px var(--ios-font); letter-spacing: -.024em; }
+html.k-ios .btn.primary { background: var(--ios-tint-fill); color: var(--ios-on-tint); }
+html.k-ios .btn.sm { min-height: 34px; padding: 0 14px; font: 600 15px/20px var(--ios-font); background: color-mix(in srgb, var(--ios-tint-fill) 15%, transparent); }
+html.k-ios .btn.stop { background: #D70015; color: #fff; }
+html.k-ios .btn.ghost { background: transparent; }
+html.k-ios .btn.danger { color: #D70015; }
+html.k-ios .running .btn { background: #fff; color: var(--primary); }
+html.k-ios .place { min-height: 34px; border: 0; background: var(--ios-fill3); font: 500 15px/20px var(--ios-font); color: var(--ios-label); }
+/* forms in the dialog: iOS bottom sheet with grouped fields */
+html.k-ios dialog { margin: auto 0 0; width: 100%; max-width: 100%; max-height: 92vh; border: 0; border-radius: var(--ios-radius-sheet) var(--ios-radius-sheet) 0 0; background: var(--ios-grouped); box-shadow: none; padding-bottom: env(safe-area-inset-bottom); }
+html.k-ios dialog::backdrop { background: var(--ios-scrim); }
+html.k-ios .dlg-form { padding: 8px 16px 20px; }
+html.k-ios .dlg-form::before { content: ""; justify-self: center; width: 36px; height: 5px; border-radius: 3px; background: var(--ios-fill); }
+html.k-ios dialog :is(input:not([type=checkbox]):not([type=radio]), select, textarea) { min-height: 44px; border: 0; border-radius: var(--ios-radius-field); background: var(--ios-grouped2); font: 400 17px/1.294 var(--ios-font); color: var(--ios-label); box-shadow: none; }
+html.k-ios .choices label { border: 0; border-radius: 16px; background: var(--ios-grouped2); }
+html.k-ios .choices label:has(input:checked) { box-shadow: inset 0 0 0 2px var(--ios-tint); background: var(--ios-grouped2); }
+html.k-ios .results button { border: 0; border-radius: 12px; background: var(--ios-grouped2); }
+html.k-ios .toast { bottom: calc(var(--ios-tabbar-space, 96px) + 8px); border-radius: 16px; }
